@@ -1,0 +1,352 @@
+.enlargecaption{
+    position: absolute;
+    border: 1px dotted navy;
+    font: normal 11px Arial;
+    }
+    
+    .enlargecaption a{
+    display:block;
+    background: lightblue; /*bg color of caption*/
+    padding: 3px;
+    text-decoration: none;
+    color: black;
+    }
+    
+    .enlargecaption a:hover{
+     background: lightyellow; /*bg color of caption when mouse rolls over it*/
+    }
+    
+    .enlargebox{
+    position: absolute;
+    border:1px solid gray;
+    display:none;
+    }
+    
+    .enlargebox .title{
+    background:gray;
+    color:white;
+    padding: 3px 2px;
+    text-align: right;
+    font:bold 14px Arial;
+    }
+    
+    .enlargebox .title img{
+    cursor:pointer;
+    cursor:hand;
+    }
+/* Plus Size Image Viewer
+* Last updated: Jan 11th, 2009. This notice must stay intact for usage 
+* Author: JavaScript Kit at http://www.javascriptkit.com/
+* Visit http://www.javascriptkit.com/ for full source code
+*/
+
+var plusimageviewer={
+	enlargeboxmarkup: '<div class="enlargebox"><div class="title"><img src="images/closebox.gif" style="margin: 2px 1px 1px 0" title="Hide Image"  /></div><div class="largeimage"></div></div>',
+	captionoffset: [-5, -15], //additional offset of caption relative to bottom left edge of image
+	fadeduration: [300, 100], //fade in and out duration, in milliseconds
+	//////////NO NEED TO EDIT BEYOND HERE/////////////
+
+	pluscontainers:[],
+	$enlargebox: null,
+	boxzindex:100,
+
+getcaptionposition:function($img){
+	var offsets=$img.offset()
+	return [offsets.left+this.captionoffset[0], offsets.top+$img.outerHeight()+this.captionoffset[1]] //return position of caption relative to thumb image
+},
+
+getlargeimgposition:function($, $enlargebox){
+	var boxdimensions=[$enlargebox.outerWidth(), $enlargebox.outerHeight()]
+	var docdimensions=[$(window).width(), $(window).height()]
+	var docscrollpos=[$(document).scrollLeft(), $(document).scrollTop()]
+	var leftpos=(docdimensions[0]>boxdimensions[0])? docscrollpos[0]+docdimensions[0]/2-boxdimensions[0]/2 : docscrollpos[0]+1 //center large image horizontally
+	var toppos=(docdimensions[1]>boxdimensions[1])? docscrollpos[1]+docdimensions[1]/2-boxdimensions[1]/2 : docscrollpos[1]+1
+	return [leftpos, toppos]
+},
+
+showimage:function($, $img){
+	var pluscontainer=this.pluscontainers[$img.data('order')]
+	pluscontainer.$enlargearea.empty().html('<img src="'+pluscontainer.enlargesrc+'" style="width:'+pluscontainer.enlargesize[0]+';" height:'+pluscontainer.enlargesize[1]+'" />')
+	var largeimgpos=this.getlargeimgposition($, pluscontainer.$enlargebox)
+	pluscontainer.$enlargebox.css({zIndex:++this.boxzindex, display:'none', left:largeimgpos[0], top:largeimgpos[1]}).fadeIn(this.fadeduration[0])
+},
+
+init:function($, $img){
+	var captionpos=this.getcaptionposition($img)
+	var $caption=$('<div class="enlargecaption"><a href="#">View Full Image</a></div>').css({left:captionpos[0], top:captionpos[1]}).appendTo(document.body)
+	var $enlargebox=$(this.enlargeboxmarkup).appendTo(document.body)
+	var $enlargearea=$enlargebox.find('.largeimage:eq(0)') //reference DIV that will contain actual enlarged image
+	var enlargesrc=$img.attr('data-plusimage')
+	var enlargesize=$img.attr('data-plussize').split(',') //get dimensions of large image as string
+	enlargesize=[parseInt(enlargesize[0]), parseInt(enlargesize[1])] //get dimensions of large image as array [w, h]
+	$caption.click(function(e){ //open large image when caption is clicked on
+		plusimageviewer.showimage($, $img, e)
+		e.preventDefault()
+		e.stopPropagation()
+	})
+	$enlargebox.click(function(e){
+		e.stopPropagation()
+	}).find('div.title img:eq(0)').click(function(){ //close image box when "x" icon is clicked on
+		$enlargebox.fadeOut(plusimageviewer.fadeduration[1])
+	})
+	this.pluscontainers.push({$img:$img, $caption:$caption, captionpos:captionpos, $enlargebox:$enlargebox, $enlargearea:$enlargearea, enlargesrc:enlargesrc, enlargesize:enlargesize})
+}
+
+}
+
+jQuery(document).ready(function($){
+	var $targetimages=$('img[data-plusimage]')
+	$targetimages.each(function(i){
+		var $img=$(this).data('order', i)
+		plusimageviewer.init($, $(this), i)
+	})
+	if ($targetimages.length>0){
+		$(document).click(function(){ //hide all plus size images when document is clicked
+			var pluscontainers=plusimageviewer.pluscontainers
+			for (var i=0; i<pluscontainers.length; i++){
+				pluscontainers[i].$enlargebox.hide()
+			}
+		})
+		$(window).bind('resize', function(){ //hide all plus size images when document is clicked
+			var pluscontainers=plusimageviewer.pluscontainers
+			for (var i=0; i<pluscontainers.length; i++){
+				var captionpos=plusimageviewer.getcaptionposition(pluscontainers[i].$img)
+				pluscontainers[i].captionpos=[captionpos[0], captionpos[1]] //refresh caption position
+				pluscontainers[i].$caption.css({left:pluscontainers[i].captionpos[0], top:pluscontainers[i].captionpos[1]}) //reposition captions when window resized
+			}
+		})		
+	}
+
+})
+* { margin: 0; padding: 0; }
+body { 
+    font: 16px Helvetica, Sans-Serif; 
+    line-height: 24px; 
+    background: url(images/noise.jpg); 
+}
+.clear { 
+    clear: both; 
+}
+#page-wrap { 
+    width: 800px; 
+    margin: 40px auto 60px; 
+}
+#pic { 
+    float: right; 
+    margin: -30px 0 0 0; 
+}
+h1 { 
+    margin: 0 0 16px 0; 
+    padding: 0 0 16px 0; 
+    font-size: 42px; font-weight: bold; 
+    letter-spacing: -2px; 
+    border-bottom: 1px solid #999; 
+}
+h2 { 
+    font-size: 20px;
+    margin: 0 0 6px 0; 
+    position: relative; 
+}
+h2 span { 
+    position: absolute; 
+    bottom: 0; right: 0; 
+    font-style: italic; 
+    font-family: Georgia, Serif; 
+    font-size: 16px; color: #999; 
+    font-weight: normal; 
+}
+p { 
+    margin: 0 0 16px 0; 
+}
+a { 
+    color: #999; 
+    text-decoration: none; 
+    border-bottom: 1px dotted #999; 
+}
+a:hover { 
+    border-bottom-style: solid; 
+    color: black; 
+}
+ul {
+    margin: 0 0 32px 17px; 
+}
+#objective { 
+    width: 600px; 
+    float: left; 
+    column-count: 2; 
+}
+#objective p { 
+    font-family: Georgia, Serif; 
+    font-style: italic; color: #666; 
+}
+dt { 
+    font-style: italic; 
+    font-weight: bold; 
+    font-size: 18px; text-align: right; 
+    padding: 0 26px 0 0; 
+    width: 150px; 
+    float: left; 
+    height: 100px; 
+    border-right: 1px solid #999;  
+}
+dd { 
+    width: 600px; 
+    float: right; 
+}
+dd.clear { 
+    float: none; 
+    margin: 0; 
+    height: 15px; 
+}
+table{
+    border: 1px solid black;
+}
+td{
+    border: 1px solid black;
+    text-align: center;
+}
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+     <title>PFC Levski</title>
+
+     <link rel="stylesheet" href="style.css">
+     <!--Free Javascript-->
+     <link rel="stylesheet" type="text/css" href="plusimageviewer.css">
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+    <script type="text/javascript" src="plusimageviewer.js"></script>
+
+</head>
+
+<body>
+
+    <div id="page-wrap">
+    
+        <img src="images/levski-logo1.png" alt="Official logo" id="pic" />
+    
+        <div id="contact-info" class="vcard">
+            <h1 class="fn">ПФК Левски(София)</h1>
+        
+            <p>
+                Phone: <span class="tel">(+359 2) 847 - 7958</span><br />
+                Email: <a class="email" href="mailto:office@levski.bg">office@levski.bg</a><br />
+                Website: <a class="website" href="https://www.levski.bg">www.levski.bg</a>
+            </p>
+        </div>
+                
+        <div id="objective">
+            <p>
+                Левски София е български професионален футболен клуб от град София, основан на 24 май 1914 година от група млади гимназисти
+                        и кръстен на българския революционер и национален герой Васил Левски.
+            </p>
+                    <p>Откакто е основан, Левски София е единственият
+                        отбор, който през всичките 97 футболни шампионата на България е играл или в първа Софийска футболна дивизия,
+                         или в Националната „А“ група.
+            </p>
+        </div>
+        
+        <div class="clear"></div>
+        
+        <dl>
+            <dd class="clear"></dd>
+            <dt>Наименования</dt>
+            <dd>
+                <p>
+                    <span>Левски (1914 – 1949)</span> | 
+                    <span>Динамо (1949 – 1957)</span> | 
+                    <span>Левски (1957 – 1969)</span> | 
+                    <span>Левски-Спартак (1969 – 1985)</span> | 
+                    <span>Витоша (1985 – 1989)</span> | 
+                    <span>Левски (от 1989 г.)</span>
+                </p>    
+            </dd>
+            
+            <dd class="clear"></dd>
+            
+            <dt><a href="https://bg.wikipedia.org/wiki/%D0%9F%D0%A4%D0%9A_%D0%9B%D0%B5%D0%B2%D1%81%D0%BA%D0%B8_(%D0%A1%D0%BE%D1%84%D0%B8%D1%8F)#%D0%A3%D1%81%D0%BF%D0%B5%D1%85%D0%B8">Успехи</a></dt>
+            <dd>
+                <h4>Шампион (26)</h4>
+                <p>1933, 1937, 1942, 1946, 1947, 1949, 1950, 1953, 1964/65, 1967/68, 1969/70, 1973/74, 1976/77, 1978/79, 1983/84, 1984/85, 1987/88, 1992/93, 1993/94, 1994/95, 1999/00, 2000/01, 2001/02, 2005/06, 2006/07 и 2008/09</p>
+            </dd>
+            <dt></dt>
+            <dd>
+                <h4>Купа на България (25)</h4>
+                <p>1942, 1946, 1947, 1949, 1950, 1956, 1957, 1958/59, 1966/67, 1969/70, 1970/71, 1975/76, 1976/77, 1978/79, 1983/84, 1985/86, 1990/91, 1991/92, 1993/94, 1997/98, 1999/00, 2001/02, 2002/03, 2004/05 и 2006/07</p>
+            </dd>
+            <dt></dt>
+            <dd>
+                <table>
+                    <tr>
+                        <th>Суперкупа</th>
+                        <th>Купа на Съветската армия</th>
+                        <th>Купа на НРБ</th>
+                        <th>Лига Европа - четвъртфинал</th>
+                        <th>КНК - четвъртфинал</th>
+                    </tr>
+                    <tr>
+                        <td>2005</td>
+                        <td>1983/84</td>
+                        <td>1981/82</td>
+                        <td>1975/76</td>
+                        <td>1969/70</td>
+                    </tr>
+                    <tr>
+                        <td>2007</td>
+                        <td>1986/87</td>
+                        <td></td>
+                        <td>2005/06</td>
+                        <td>1976/77</td>
+                    </tr>
+                    <tr>
+                        <td>2009</td>
+                        <td>1987/88</td>
+                        <td></td>
+                        <td></td>
+                        <td>1986/87</td>
+                    </tr>
+                </table>
+            </dd>  
+            <dt></dt>          
+            <dd class="clear"></dd>
+            
+            <dt><a href="https://bg.wikipedia.org/wiki/%D0%9F%D0%A4%D0%9A_%D0%9B%D0%B5%D0%B2%D1%81%D0%BA%D0%B8_(%D0%A1%D0%BE%D1%84%D0%B8%D1%8F)#%D0%9F%D0%BE%D1%87%D0%B5%D1%82%D0%BD%D0%B0_%D0%BB%D0%B8%D1%81%D1%82%D0%B0">Рекорди</a></dt>
+            <dd>
+                <h2>Най-много изиграни мачове</h2>
+                <ol>
+                    <li> Стефан Аладжов - 473</li>
+                    <li> Емил Спасов - 415</li>
+                    <li> Павел Панов - 381</li>
+                </ol>
+            </dd>
+            <dt></dt>
+            <dd>
+                <h2>Най-много голове</h2>
+                <ol>
+                    <li> Наско Сираков - 206</li>
+                    <li> Павел Панов - 176</li>
+                    <li> Георги Аспарухов – Гунди - 153</li>
+                </ol>
+            </dd>
+            <dd class="clear"></dd>
+            <dt>Галерия</dt>
+            <dd>
+                <img src="images/levski-logo1.png" style="width:200px" data-plusimage="images/levski-logo1.png" data-plussize="700,466" />
+                <img src="images/stadium.jpeg" style="width:200px" data-plusimage="images/stadium.jpeg" data-plussize="700,466" />
+                <img src="images/gundi.jpg" style="width:200px" data-plusimage="images/gundi.jpg" data-plussize="700,466" />
+            </dd>
+        </dl>
+        
+        <div class="clear"></div>
+    
+    </div>
+
+</body>
+
+</html>
